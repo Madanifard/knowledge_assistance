@@ -1,0 +1,36 @@
+# Visual Studio Code #
+.vscode/
+
+# Django #
+*.log
+*.log.*
+*.pot
+*.pyc
+__pycache__
+db.sqlite3
+
+
+# Backup files #
+*.bak
+
+
+# If you are using PyCharm #
+# User-specific stuff
+.idea/
+
+# Environments
+.env
+.env.db
+.venv
+env/
+venv/
+VENV/
+ENV/
+.VENV/
+env.bak/
+venv.bak/
+
+static/
+media/
+
+*.db
