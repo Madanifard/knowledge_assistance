@@ -4,19 +4,16 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from passlib.context import CryptHashContext
 from pydantic import BaseModel
 
-from ..db.queries.user_crud import get_user_by_username
-from ..config import Settings
+from app.db.queries.user_crud import get_user_by_username
+from app.config import get_settings
 
-# تنظیمات
-# بهتر است از environment variable استفاده کنید
-SECRET_KEY = Settings.SECRET_KEY 
-ALGORITHM = Settings.ALGORITHM 
-ACCESS_TOKEN_EXPIRE_MINUTES = Settings.ACCESS_TOKEN_EXPIRE_MINUTES  
 
-pwd_context = CryptHashContext(schemes=["bcrypt"], deprecated="auto")
+SECRET_KEY = get_settings().SECRET_KEY 
+ALGORITHM = get_settings().ALGORITHM 
+ACCESS_TOKEN_EXPIRE_MINUTES = get_settings().ACCESS_TOKEN_EXPIRE_MINUTES  
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")  # /token endpoint
 
 
@@ -27,15 +24,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
-
-
-# توابع کمکی
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):

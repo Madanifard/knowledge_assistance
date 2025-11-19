@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import Mapped
-from ..sql_db import Base
+from app.db.sql_db import Base
 
 
 class User(Base):
-    __tablename__ == "users"
+    __tablename__ = "users"
 
     id: Mapped[int] = Column(
         Integer, primary_key=True, index=True)
@@ -17,5 +17,5 @@ class User(Base):
     is_active: Mapped[bool] = Column(
         Boolean, default=True)
 
-    def __repr__(self) -> self:
+    def __repr__(self) -> str:
         return f"<User {self.username}>"
