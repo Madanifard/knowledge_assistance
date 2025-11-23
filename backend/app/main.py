@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db.sql_db import engine, Base
-from app.routers import auth, users
+from app.routers import auth, users, category
 
 
 @asynccontextmanager
@@ -35,6 +35,7 @@ app = FastAPI(
 # روترها
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(category.router)
 
 
 @app.get("/")

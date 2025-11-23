@@ -2,17 +2,15 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sess
 from sqlalchemy.orm import DeclarativeBase
 import os
 from dotenv import load_dotenv
+from typing import AsyncGenerator
 
 load_dotenv()
 
 # برای PostgreSQL (توصیه شده در تولید)
-# DATABASE_URL = os.getenv(
-#     "DATABASE_URL",
-#     "postgresql+asyncpg://user:password@localhost/dbname"  # تغییر بده
-# )
+DATABASE_URL = os.getenv(
+    "SQL_DATABASE_URL",
+    "sqlite+aiosqlite:///./fastapi_jwt.db")
 
-# برای تست سریع با SQLite
-DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 
@@ -27,7 +25,6 @@ class Base(DeclarativeBase):
     pass
 
 
-# تابع برای استفاده در dependency
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as session:
         yield session
