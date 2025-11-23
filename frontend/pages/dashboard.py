@@ -11,10 +11,13 @@ if not is_logged_in():
 user = get_current_user()
 st.title(f"خوش آمدید {user['username']} عزیز!")
 
-# مثال درخواست محافظت‌شده
-# data = api_request("GET", "/api/profile", token=st.session_state.jwt_token)
-# if data:
-#     st.write("اطلاعات پروفایل:", data)
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("دسته بندی ها", use_container_width=True):
+        st.switch_page("pages/list_categories.py")
+with col2:
+    if st.button("ورود", use_container_width=True):
+        st.switch_page("pages/login.py")
 
 if st.button("خروج از حساب"):
     logout()
