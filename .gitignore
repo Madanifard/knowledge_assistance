@@ -34,3 +34,6 @@ static/
 media/
 
 *.db
+
+# Upload files
+uploads/
