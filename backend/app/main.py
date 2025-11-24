@@ -3,7 +3,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db.sql_db import engine, Base
-from app.routers import auth, users, category
+
+from app.db.models.user_model import User
+from app.db.models.category_model import Category 
+from app.db.models.document_model import Document
+
+from app.routers import auth, users, documents
+from app.routers import categories
 
 
 @asynccontextmanager
@@ -35,7 +41,8 @@ app = FastAPI(
 # روترها
 app.include_router(auth.router)
 app.include_router(users.router)
-app.include_router(category.router)
+app.include_router(categories.router)
+app.include_router(documents.router)
 
 
 @app.get("/")

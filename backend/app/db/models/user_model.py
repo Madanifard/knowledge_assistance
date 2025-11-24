@@ -1,7 +1,10 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from app.db.sql_db import Base
 
+if TYPE_CHECKING:
+    from app.db.models.document_model import Document
 
 class User(Base):
     __tablename__ = "users"
@@ -17,5 +20,13 @@ class User(Base):
     is_active: Mapped[bool] = Column(
         Boolean, default=True)
 
+    files: Mapped[list["Document"]] = relationship(
+        "Document",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    
     def __repr__(self) -> str:
         return f"<User {self.username}>"
+
+    
