@@ -11,38 +11,42 @@ API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000").rstrip("/")
 def api_request(method: str, endpoint: str, form_data=None, json_data=None, token=None, files=None):
     url = f"{API_BASE_URL}{endpoint}"
     headers = {"Accept": "application/json"}
+
     if token:
         headers["Authorization"] = f"Bearer {token}"
 
-    data = None
-    json = None
-    if form_data is not None:
+    if files:
         data = form_data
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    elif json_data is not None:
-        json = json_data
-        headers["Content-Type"] = "application/json"
+        json = None
+    else:
+        if form_data:
+            headers["Content-Type"] = "application/x-www-form-urlencoded"
+            data = form_data
+            json = None
+        elif json_data:
+            headers["Content-Type"] = "application/json"
+            json = json_data
+            data = None
+        else:
+            data = None
+            json = None
 
     try:
-        response = requests.request(method.upper(), url=url, data=data, json=json, headers=headers, files=files, timeout=15)
+        response = requests.request(
+            method.upper(),
+            url=url,
+            data=data,
+            json=json,
+            headers=headers,
+            files=files,
+            timeout=15
+        )
         if response.status_code in [200, 201]:
-            try:
-                return response.json()
-            except:
-                return {"raw": response.text}
-        elif response.status_code == 401:
-            st.error("توکن نامعتبر یا منقضی شده.")
-            logout()
-            st.rerun()
+            return response.json()
         else:
-            try:
-                msg = response.json().get("detail", response.text)
-            except:
-                msg = response.text
-            st.error(f"خطا {response.status_code}: {msg}")
-            return None
+            return response.json()
     except Exception as e:
-        st.error(f"مشکل در ارتباط: {e}")
+        st.error(f"Error: {e}")
         return None
 
 
