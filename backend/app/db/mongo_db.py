@@ -2,8 +2,13 @@ from pymongo import MongoClient
 from app.config import get_settings
 
 
-MONGODB_URL = get_settings().MONGO_DB_URL
+MONGODB_URI = get_settings().MONGODB_URI
 
-client = MongoClient(MONGODB_URL)
-db = client.pdf_storage
 
+class MongoConnection:
+    def __init__(self, uri=MONGODB_URI, db="pdf_db"):
+        self.client = MongoClient(uri)
+        self.db = self.client[db]
+
+    def get_collection(self, name: str):
+        return self.db[name]

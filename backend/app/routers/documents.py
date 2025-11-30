@@ -96,7 +96,7 @@ async def process_pdf_document(doc_id: int, db: AsyncSession = Depends(get_db)):
         raise HTTPException(400, "Document is not a PDF")
 
     # اینجا باید کد شروع تسک سلری رو اضافه کنی
-    from app.celery_tasks.pdf_task import extract_pdf_task
-    task = extract_pdf_task.delay(document.id, document.name)
+    from app.celery_tasks.pdf_task import extract_and_store_pdf
+    task = extract_and_store_pdf.delay(document.id, document.name)
 
     return {"task_id": task.id, "message": "PDF processing started"}

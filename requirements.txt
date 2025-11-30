@@ -100,3 +100,15 @@ watchdog==6.0.0
 watchfiles==1.1.1
 wcwidth==0.2.14
 websockets==15.0.1
+#FOR PDF SECTION
+cffi==2.0.0
+charset-normalizer==3.4.4
+cryptography==46.0.3
+packaging==25.0
+pdf2image==1.17.0
+pdfminer.six==20251107
+pdfplumber==0.11.8
+pillow==12.0.0
+pycparser==2.23
+pypdfium2==5.1.0
+pytesseract==0.3.13

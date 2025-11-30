@@ -1,63 +1,21 @@
-from celery import Celery
-from app.config import get_settings
-import fitz  # type: ignore
-from datetime import datetime
-from app.websocket import WebSocketManager
-from app.db.mongo_db import db
-from app.db.queries.document_crud import DocumentCRUD
-from app.db.sql_db import get_db
-
-BROKER_URL = get_settings().REDIS_URL
-BACKEND_URL = get_settings().REDIS_URL
-
-celery = Celery(__name__, broker=BROKER_URL, backend=BACKEND_URL)
-
-websocket_manager = WebSocketManager()
+from app.celery_app import celery_app
+from app.utils.pdf_reader import smart_extract_pdf_to_dicts
+from app.db.queries.pdf_crud import PdfRepository
+from pathlib import Path
 
 
-@celery.task(bind=True)
-def extract_pdf_task(self, file_id: str, original_filename: str):
-    # TODO: CHANGE WITH PDF READER AND EXTRACTOR
-    try:
-        pdf_data = DocumentCRUD.get(get_db(), file_id)
-        doc = fitz.open(stream=pdf_data.file_path, filetype="pdf")
-        pages_count = doc.page_count
-        full_text = ""
+@celery_app.task(bind=True)
+def extract_and_store_pdf(self, file_path, collection_name):
+    repo = PdfRepository(db=collection_name)
 
-        for page_num in range(pages_count):
-            page = doc.load_page(page_num)
-            text = page.get_text("text")
-            full_text += f"\n--- صفحه {page_num + 1} ---\n{text}"
+    file_name = Path(file_path).name
+    pages = smart_extract_pdf_to_dicts(file_path)
 
-            # ارسال پیشرفت به کلاینت متصل (هر ۵ صفحه یکبار یا هر صفحه)
-            progress = int((page_num + 1) / pages_count * 100)
-            if progress % 5 == 0 or progress == 100:  # هر ۵ درصد یا آخر
-                self.update_state(state='PROGRESS',
-                                  meta={'progress': progress})
-                # ارسال به WebSocket
-                import anyio
-                anyio.run(websocket_manager.broadcast_progress,
-                          self.request.id, progress)
+    file_id = repo.insert_pdf_meta(file_name, len(pages))
+    count = repo.insert_pdf_pages(file_id, pages)
 
-        # ذخیره نتیجه در MongoDB
-        result_doc = {
-            "file_id": file_id,
-            "original_filename": original_filename,
-            "extracted_text": full_text,
-            "pages": pages_count,
-            "extracted_at": datetime.utcnow(),
-            "status": "completed"
-        }
-        db.extracted_pdfs.insert_one(result_doc)
-
-        # ارسال پیام نهایی به کلاینت
-        anyio.run(websocket_manager.send_completed,
-                  self.request.id, result_doc)
-
-        return result_doc
-
-    except Exception as e:
-        # ارسال خطا به کلاینت
-        import anyio
-        anyio.run(websocket_manager.send_error, self.request.id, str(e))
-        raise e
+    return {
+        "file_id": file_id,
+        "pages_saved": count,
+        "status": "OK"
+    }

@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  
     SQL_DATABASE_URL: str
+    BROKER_URI: str
+    BACKEND_URI: str
+    MONGODB_URI: str
 
     class Config:
         env_file = ".env"
