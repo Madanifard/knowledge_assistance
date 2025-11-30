@@ -85,3 +85,18 @@ async def delete_document(doc_id: int, db: AsyncSession = Depends(get_db)):
     await DocumentCRUD.delete(db, document)
 
     return {"message": "deleted"}
+
+@router.get("/process_pdf/{doc_id}")
+async def process_pdf_document(doc_id: int, db: AsyncSession = Depends(get_db)):
+    document = await DocumentCRUD.get(db, doc_id)
+    if not document:
+        raise HTTPException(404, "Document not found")
+
+    if document.file_type != "application/pdf":
+        raise HTTPException(400, "Document is not a PDF")
+
+    # اینجا باید کد شروع تسک سلری رو اضافه کنی
+    from app.celery_tasks.pdf_task import extract_pdf_task
+    task = extract_pdf_task.delay(document.id, document.name)
+
+    return {"task_id": task.id, "message": "PDF processing started"}

@@ -1,11 +1,12 @@
 # main.py
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocketDisconnect, WebSocket
+from websocket import WebSocketManager
 
 from app.db.sql_db import engine, Base
 
 from app.db.models.user_model import User
-from app.db.models.category_model import Category 
+from app.db.models.category_model import Category
 from app.db.models.document_model import Document
 
 from app.routers import auth, users, documents
@@ -43,6 +44,24 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(categories.router)
 app.include_router(documents.router)
+
+websocket_manager = WebSocketManager()
+
+# ──────────────────────────────
+# WebSocket Endpoint
+# ──────────────────────────────
+@app.websocket("/ws/{task_id}")
+async def websocket_endpoint(websocket: WebSocket, task_id: str):
+    await websocket_manager.connect(task_id, websocket)
+    try:
+        # فقط keep-alive می‌کنیم تا اتصال باز بمونه
+        while True:
+            data = await websocket.receive_text()  # منتظر پیام از کلاینت (اختیاری)
+            # می‌تونی اینجا دستورات دیگه مثل "cancel" بگیری
+    except WebSocketDisconnect:
+        websocket_manager.disconnect(task_id)
+    except Exception as e:
+        websocket_manager.disconnect(task_id)
 
 
 @app.get("/")
