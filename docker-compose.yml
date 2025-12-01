@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: fastapi_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+    env_file:
+      - ./backend/app/.env
+    depends_on:
+      - postgres
+      - redis
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0
+      --port 8000
+      --reload
+
+  frontend:
+    build: ./frontend
+    container_name: streamlit_frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./frontend:/app
+    env_file:
+      - ./frontend/.env
+
+  celery:
+    build: ./backend
+    container_name: celery_worker
+    command: celery -A app.celery_app.celery_app worker --loglevel=info
+    volumes:
+      - ./backend/app:/app/app
+    env_file:
+      - ./backend/app/.env
+    depends_on:
+      - redis
+      - postgres
+
+  redis:
+    image: redis:7
+    container_name: redis_broker
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: devdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
