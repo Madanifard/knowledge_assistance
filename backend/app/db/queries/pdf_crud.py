@@ -1,6 +1,7 @@
 from datetime import datetime
 from app.db.mongo_db import MongoConnection
 
+# TODO: NOT NEEDED, use POSTGRES
 
 class PdfRepository:
     def __init__(self, conn: MongoConnection = None, db:str = None):

@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from app.db.models.document_model import Document
+
 
 class DocumentCRUD:
 
@@ -45,3 +46,10 @@ class DocumentCRUD:
         await db.delete(doc)
         await db.commit()
         return True
+
+    @staticmethod
+    async def update_metadata(db: AsyncSession, doc_id: int, metadata):
+        result = await db.execute(
+            update(Document).where(Document.id==doc_id).values(metadata=metadata)
+        )
+        return result

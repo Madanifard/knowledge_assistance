@@ -9,7 +9,7 @@ from app.schemas.document_schemas import DocumentOut
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR = "documents"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
@@ -97,6 +97,6 @@ async def process_pdf_document(doc_id: int, db: AsyncSession = Depends(get_db)):
 
     # اینجا باید کد شروع تسک سلری رو اضافه کنی
     from app.celery_tasks.pdf_task import extract_and_store_pdf
-    task = extract_and_store_pdf.delay(document.id, document.name)
+    task = extract_and_store_pdf.delay(doc_id)
 
     return {"task_id": task.id, "message": "PDF processing started"}

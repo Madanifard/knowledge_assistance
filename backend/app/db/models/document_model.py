@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from app.db.sql_db import Base
 
 if TYPE_CHECKING:
@@ -24,8 +25,7 @@ class Document(Base):
         "Category", back_populates="files")
     name: Mapped[str] = Column(
         String(255), unique=True, index=True, nullable=False)
-    collection_name: Mapped[str] = Column(
-        String(255), index=True, nullable=False) # used for MongoDB collection
+    metadata = Column(JSONB, nullable=False, server_default='{}')
     file_path: Mapped[str] = Column(
         String(500), unique=True, index=True, nullable=True)
     file_type: Mapped[str] = Column(
